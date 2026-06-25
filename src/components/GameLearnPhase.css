@@ -1,0 +1,50 @@
+.learn-phase {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fef9ff 0%, #fff 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.learn-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.learn-progress-dots {
+  display: flex;
+  gap: 6px;
+}
+.learn-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  transition: all 0.3s;
+}
+.learn-dot--active {
+  background: #764ba2;
+  transform: scale(1.3);
+}
+.learn-dot--done {
+  background: #27ae60;
+}
+.learn-progress-text {
+  font-size: 16px;
+  color: #999;
+  font-weight: 600;
+}
+.learn-card-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.learn-card-hint {
+  text-align: center;
+  color: #bbb;
+  font-size: 14px;
+  padding: 16px 0;
+}

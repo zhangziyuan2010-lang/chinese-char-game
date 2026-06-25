@@ -1,0 +1,101 @@
+.char-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  animation: charFadeIn 0.4s ease;
+}
+@keyframes charFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.char-card__big {
+  font-size: 120px;
+  font-weight: bold;
+  color: #e74c3c;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.char-card__pinyin {
+  font-size: 28px;
+  color: #3498db;
+  margin-bottom: 20px;
+}
+.char-card__meaning-label {
+  font-size: 16px;
+  color: #999;
+  margin-bottom: 4px;
+}
+.char-card__meaning {
+  font-size: 22px;
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+  max-width: 360px;
+  line-height: 1.5;
+}
+.char-card__sentence-label {
+  font-size: 16px;
+  color: #999;
+  margin-bottom: 4px;
+}
+.char-card__sentence {
+  font-size: 22px;
+  color: #555;
+  text-align: center;
+  max-width: 400px;
+  background: #f0f7ff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  line-height: 1.6;
+}
+.char-card__speaking {
+  margin-top: 16px;
+  color: #e74c3c;
+  font-size: 18px;
+  animation: pulse 0.8s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.char-card__replay {
+  margin-top: 16px;
+  padding: 10px 24px;
+  font-size: 18px;
+  border: 2px solid #3498db;
+  border-radius: 12px;
+  background: white;
+  color: #3498db;
+  cursor: pointer;
+}
+.char-card__replay:hover {
+  background: #eef5ff;
+}
+.char-card__done {
+  margin-top: 16px;
+  color: #27ae60;
+  font-size: 16px;
+  animation: fadeIn 0.3s;
+}
+.char-card__next-btn {
+  margin-top: 20px;
+  padding: 14px 40px;
+  font-size: 22px;
+  font-weight: bold;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: white;
+  cursor: pointer;
+  animation: pulseBtn 1.2s infinite;
+  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.4);
+}
+.char-card__next-btn:hover {
+  transform: scale(1.05);
+}
+@keyframes pulseBtn {
+  0%, 100% { box-shadow: 0 4px 16px rgba(67, 233, 123, 0.4); }
+  50% { box-shadow: 0 6px 28px rgba(67, 233, 123, 0.7); }
+}

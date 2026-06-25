@@ -1,0 +1,150 @@
+.dashboard {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f4ff 0%, #fff 100%);
+  padding: 20px 16px 40px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 24px;
+}
+.dashboard-avatar {
+  font-size: 48px;
+}
+.dashboard-username {
+  flex: 1;
+  font-size: 24px;
+  color: #333;
+  margin: 0;
+}
+.dashboard-logout {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  color: #999;
+}
+.dashboard-progress-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+.dashboard-progress-label {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+}
+.dashboard-progress-bar {
+  height: 16px;
+  background: #e8ecf4;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.dashboard-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #43e97b, #38f9d7);
+  border-radius: 8px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+.dashboard-progress-percent {
+  text-align: right;
+  font-size: 14px;
+  color: #27ae60;
+  font-weight: bold;
+}
+.dashboard-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dashboard-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  font-size: 20px;
+  border: none;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s;
+}
+.dashboard-menu-btn:hover {
+  transform: translateY(-2px);
+}
+.dashboard-menu-btn span {
+  flex: 1;
+  color: #333;
+  font-weight: 600;
+}
+.dashboard-menu-btn small {
+  color: #999;
+  font-size: 14px;
+}
+.dashboard-menu-btn--primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+.dashboard-menu-btn--primary span {
+  color: white;
+}
+.dashboard-menu-btn--primary small {
+  color: rgba(255,255,255,0.8);
+}
+.dashboard-game-area {
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-game-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 8px 4px;
+  animation: slideDown 0.25s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 300px; }
+}
+.dashboard-game-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px;
+  font-size: 18px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.dashboard-game-option:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+.dashboard-game-option span {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+}
+.dashboard-game-option small {
+  color: #999;
+  font-size: 13px;
+}
+.dashboard-game-option--new { background: #fff5f5; }
+.dashboard-game-option--new:hover { border-color: #e74c3c; }
+.dashboard-game-option--review { background: #f5fff5; }
+.dashboard-game-option--review:hover { border-color: #27ae60; }
+.dashboard-game-option--mixed { background: #f5f5ff; }
+.dashboard-game-option--mixed:hover { border-color: #667eea; }
