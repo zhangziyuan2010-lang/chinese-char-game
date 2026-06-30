@@ -22,33 +22,42 @@
   color: #3498db;
   margin-bottom: 20px;
 }
-.char-card__meaning-label {
-  font-size: 16px;
-  color: #999;
-  margin-bottom: 4px;
-}
-.char-card__meaning {
-  font-size: 22px;
-  color: #333;
-  margin-bottom: 16px;
-  text-align: center;
-  max-width: 360px;
-  line-height: 1.5;
-}
 .char-card__sentence-label {
   font-size: 16px;
   color: #999;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+}
+.char-card__sentences {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  width: 100%;
 }
 .char-card__sentence {
-  font-size: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 21px;
   color: #555;
-  text-align: center;
-  max-width: 400px;
+  text-align: left;
   background: #f0f7ff;
   padding: 12px 20px;
   border-radius: 12px;
   line-height: 1.6;
+}
+.char-card__sentence-index {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #3498db;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 26px;
+  text-align: center;
+  margin-top: 4px;
 }
 .char-card__speaking {
   margin-top: 16px;

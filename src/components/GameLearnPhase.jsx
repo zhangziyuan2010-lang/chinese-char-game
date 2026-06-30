@@ -6,29 +6,49 @@ import './GameLearnPhase.css';
 export default function GameLearnPhase({ roundChars, onComplete }) {
   const [index, setIndex] = useState(0);
   const [showChar, setShowChar] = useState(true);
+  const [speechDone, setSpeechDone] = useState(false);
+  const hasChars = roundChars.length > 0;
   const isLast = index === roundChars.length - 1;
 
-  // 当 index 改变（且非最后一个字）时，自动切换到下一个字
-  // 对于非最后的字，CharCard 会在朗读完成后自动调用 onComplete
-  const handleCharComplete = useCallback(() => {
+  const moveToIndex = useCallback((nextIndex) => {
+    stopSpeak();
+    setSpeechDone(false);
+    setIndex(nextIndex);
+    setShowChar(false);
+    setTimeout(() => setShowChar(true), 100);
+  }, []);
+
+  const handlePrev = useCallback(() => {
+    if (index === 0) return;
+    moveToIndex(index - 1);
+  }, [index, moveToIndex]);
+
+  const handleNext = useCallback(() => {
+    if (!speechDone) return;
+
     if (isLast) {
-      // 最后一个字：用户点击「开始测验」按钮触发
-      // 直接进入测验阶段
       stopSpeak();
       onComplete();
-    } else {
-      // 非最后一个字：自动切换到下一个
-      setIndex(prev => prev + 1);
-      setShowChar(false);
-      // 短暂延迟后显示下一个字，触发重新渲染
-      setTimeout(() => setShowChar(true), 100);
+      return;
     }
-  }, [isLast, onComplete]);
+
+    moveToIndex(index + 1);
+  }, [index, isLast, moveToIndex, onComplete, speechDone]);
 
   // 组件卸载时取消朗读
   useEffect(() => {
     return () => stopSpeak();
   }, []);
+
+  if (!hasChars) {
+    return (
+      <div className="learn-phase">
+        <div className="learn-card-area">
+          <div className="learn-card-hint">现在没有可以练习的字，先回首页选择新学字吧。</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="learn-phase">
@@ -51,14 +71,30 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
           <CharCard
             key={roundChars[index].id}
             charData={roundChars[index]}
-            onComplete={handleCharComplete}
-            isLast={isLast}
+            onSpeechDone={() => setSpeechDone(true)}
           />
         )}
       </div>
 
       <div className="learn-card-hint">
-        {isLast ? '🎯 朗读完成后，点击下方按钮进入测验' : '⏳ 请认真听完朗读～'}
+        {speechDone ? '朗读完成后，可以继续或返回复听' : '请认真听完朗读'}
+      </div>
+
+      <div className="learn-nav">
+        <button
+          className="learn-nav-btn"
+          onClick={handlePrev}
+          disabled={index === 0}
+        >
+          ← 上一个
+        </button>
+        <button
+          className="learn-nav-btn learn-nav-btn--primary"
+          onClick={handleNext}
+          disabled={!speechDone}
+        >
+          {isLast ? '开始测验 →' : '下一个 →'}
+        </button>
       </div>
     </div>
   );

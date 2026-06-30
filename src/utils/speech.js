@@ -1,12 +1,29 @@
 // Web Speech API 封装 — 中文语音朗读（v3 自然语音优化版）
 
 let synth = null;
+let unlocked = false;
 
 function getSynth() {
   if (!synth && typeof window !== 'undefined') {
     synth = window.speechSynthesis;
   }
   return synth;
+}
+
+function waitForVoices(s) {
+  return new Promise((resolve) => {
+    const voices = s.getVoices();
+    if (voices.length > 0) {
+      resolve(voices);
+      return;
+    }
+
+    const timer = setTimeout(() => resolve(s.getVoices()), 800);
+    s.onvoiceschanged = () => {
+      clearTimeout(timer);
+      resolve(s.getVoices());
+    };
+  });
 }
 
 /**
@@ -54,16 +71,35 @@ function pickBestVoice(s) {
  * @param {string} text - 要朗读的中文
  * @returns {Promise<void>} 朗读完成时 resolve
  */
-export function speak(text) {
-  return new Promise((resolve) => {
+export async function unlockSpeech() {
+  const s = getSynth();
+  if (!s || unlocked) return;
+
+  await waitForVoices(s);
+  await new Promise((resolve) => {
+    const utterance = new SpeechSynthesisUtterance(' ');
+    utterance.volume = 0;
+    utterance.lang = 'zh-CN';
+    utterance.onend = resolve;
+    utterance.onerror = resolve;
+    s.speak(utterance);
+    setTimeout(resolve, 250);
+  });
+  unlocked = true;
+}
+
+export async function speak(text) {
+  return new Promise(async (resolve) => {
     const s = getSynth();
     if (!s) {
       resolve();
       return;
     }
 
+    await waitForVoices(s);
+
     // 估算总时长：中文约 2.5 字/秒（稍慢），加 4 秒缓冲
-    const estimatedMs = Math.max(4000, (text.length / 2.5) * 1000 + 4000);
+    const estimatedMs = Math.max(3500, (String(text).length / 2.8) * 1000 + 3000);
     let resolved = false;
 
     const done = () => {
@@ -85,8 +121,8 @@ export function speak(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-CN';
-    utterance.rate = 0.75;   // 更慢，更清晰自然
-    utterance.pitch = 1.05;  // 略微提高音调，更像亲切的童声
+    utterance.rate = 0.88;   // 比默认慢一点，但避免拖腔
+    utterance.pitch = 1.08;  // 略微提高音调，更亲切
     utterance.volume = 1;
 
     const bestVoice = pickBestVoice(s);
@@ -106,11 +142,11 @@ export function speak(text) {
  * @param {string[]} segments - 多个文本段落，每段之间自动停顿
  * @returns {Promise<void>}
  */
-export async function speakSegments(segments) {
+export async function speakSegments(segments, pauseMs = 220) {
   for (const seg of segments) {
     await speak(seg);
-    // 段落间停顿 300ms，模拟自然换气
-    await new Promise(r => setTimeout(r, 300));
+    // 段落间停顿，模拟自然换气
+    await new Promise(r => setTimeout(r, pauseMs));
   }
 }
 

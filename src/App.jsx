@@ -3,15 +3,18 @@ import LoginPage from './components/LoginPage';
 import DashboardPage from './components/DashboardPage';
 import GameLearnPhase from './components/GameLearnPhase';
 import GameQuizPhase from './components/GameQuizPhase';
+import GameSpeakPhase from './components/GameSpeakPhase';
 import GameResultPage from './components/GameResultPage';
 import { useAuth } from './hooks/useAuth';
 import { useGame } from './hooks/useGame';
+import { unlockSpeech } from './utils/speech.js';
 import './App.css';
 
 export default function App() {
   const auth = useAuth();
   const game = useGame();
   const [page, setPage] = useState(auth.currentUser ? 'dashboard' : 'login');
+  const [notice, setNotice] = useState('');
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const handleLogin = useCallback((username, password) => {
@@ -33,8 +36,14 @@ export default function App() {
   }, [auth, game]);
 
   const handleStartGame = useCallback((mode) => {
-    game.startGame(mode, auth.learnedChars, auth.errorChars);
-    setPage('learn');
+    unlockSpeech();
+    const result = game.startGame(mode, auth.learnedChars, auth.errorChars);
+    if (!result.success) {
+      setNotice(result.error);
+      return;
+    }
+    setNotice('');
+    setPage(mode === 'speak' ? 'speak' : 'learn');
   }, [game, auth.learnedChars, auth.errorChars]);
 
   const handleLearnComplete = useCallback(() => {
@@ -43,14 +52,21 @@ export default function App() {
 
   const handleBackToLobby = useCallback(() => {
     game.resetGame();
+    setNotice('');
     forceUpdate();
     setPage('dashboard');
   }, [game, forceUpdate]);
 
   const handlePlayAgain = useCallback(() => {
     if (game.state.mode) {
-      game.startGame(game.state.mode, auth.learnedChars, auth.errorChars);
-      setPage('learn');
+      unlockSpeech();
+      const result = game.startGame(game.state.mode, auth.learnedChars, auth.errorChars);
+      if (!result.success) {
+        setNotice(result.error);
+        setPage('dashboard');
+        return;
+      }
+      setPage(game.state.mode === 'speak' ? 'speak' : 'learn');
     }
   }, [game, auth.learnedChars, auth.errorChars]);
 
@@ -74,6 +90,18 @@ export default function App() {
     setPage('result');
   }, [game.state, auth, forceUpdate]);
 
+  const handleSpeakComplete = useCallback((result) => {
+    auth.recordGame({
+      mode: 'speak',
+      score: result.score,
+      wrongChars: result.wrongChars,
+      correctChars: result.correctChars,
+      newLearned: [],
+    });
+    forceUpdate();
+    setPage('result');
+  }, [auth, forceUpdate]);
+
   const stats = auth.getStats(auth.currentUser);
 
   return (
@@ -86,6 +114,7 @@ export default function App() {
         <DashboardPage
           username={auth.currentUser}
           stats={stats}
+          notice={notice}
           onStartGame={handleStartGame}
           onLogout={handleLogout}
         />
@@ -95,6 +124,13 @@ export default function App() {
         <GameLearnPhase
           roundChars={game.state.roundChars}
           onComplete={handleLearnComplete}
+        />
+      )}
+
+      {page === 'speak' && game.state?.roundChars && (
+        <GameSpeakPhase
+          roundChars={game.state.roundChars}
+          onComplete={handleSpeakComplete}
         />
       )}
 

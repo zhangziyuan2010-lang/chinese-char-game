@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { getChildMeaning } from '../utils/charText.js';
 import './GameResultPage.css';
 
 export default function GameResultPage({ score, wrongChars, roundChars, mode, username, onBackToLobby, onPlayAgain }) {
@@ -9,7 +10,13 @@ export default function GameResultPage({ score, wrongChars, roundChars, mode, us
   }, [wrongChars, roundChars]);
 
   const isPerfect = score === 10;
-  const modeLabel = mode === 'new' ? '新学字' : mode === 'review' ? '复习字' : '混合模式';
+  const modeLabel = mode === 'new'
+    ? '新学字'
+    : mode === 'review'
+      ? '复习字'
+      : mode === 'speak'
+        ? '跟读练习'
+        : '混合模式';
 
   return (
     <div className="result-page">
@@ -34,7 +41,7 @@ export default function GameResultPage({ score, wrongChars, roundChars, mode, us
                   <div className="result-wrong-char">{c.char}</div>
                   <div>
                     <div className="result-wrong-pinyin">{c.pinyin}</div>
-                    <div className="result-wrong-meaning">{c.meaning}</div>
+                    <div className="result-wrong-meaning">{getChildMeaning(c)}</div>
                   </div>
                 </div>
               ))}

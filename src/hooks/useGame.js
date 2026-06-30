@@ -7,6 +7,19 @@ function randomPick(arr, n) {
   return shuffled.slice(0, n);
 }
 
+function uniqueByChar(arr) {
+  const seen = new Set();
+  return arr.filter(item => {
+    if (seen.has(item.char)) return false;
+    seen.add(item.char);
+    return true;
+  });
+}
+
+function randomPickUniqueChars(arr, n) {
+  return randomPick(uniqueByChar(arr), n);
+}
+
 // 工具函数：shuffle 数组
 function shuffle(arr) {
   const a = [...arr];
@@ -18,7 +31,7 @@ function shuffle(arr) {
 }
 
 const initialState = {
-  mode: null,           // 'new' | 'review' | 'mixed'
+  mode: null,           // 'new' | 'review' | 'mixed' | 'speak'
   roundChars: [],       // 本局 10 个字（char objects）
   phase: null,          // 'learn' | 'quiz' | 'result'
   learnIndex: 0,        // 当前朗读到第几个字（0-9）
@@ -135,15 +148,18 @@ export function useGame() {
     if (mode === 'new') {
       // 新学字：从未学字中选取
       const unlearned = allChars.filter(c => !learnedSet.has(c.id));
-      selected = randomPick(unlearned, Math.min(10, unlearned.length));
+      selected = randomPickUniqueChars(unlearned, Math.min(10, unlearned.length));
     } else if (mode === 'review') {
       // 复习字：从已学字中选取，错题本中的字优先
       const errorPool = allChars.filter(c => learnedSet.has(c.id) && errorSet.has(c.id));
       const normalPool = allChars.filter(c => learnedSet.has(c.id) && !errorSet.has(c.id));
 
-      const fromError = randomPick(errorPool, Math.min(10, errorPool.length));
+      const fromError = randomPickUniqueChars(errorPool, Math.min(10, errorPool.length));
       const remaining = 10 - fromError.length;
-      const fromNormal = randomPick(normalPool, Math.min(remaining, normalPool.length));
+      const fromNormal = randomPickUniqueChars(
+        normalPool.filter(c => !fromError.some(item => item.char === c.char)),
+        Math.min(remaining, normalPool.length)
+      );
       selected = shuffle([...fromError, ...fromNormal]);
     } else if (mode === 'mixed') {
       // 混合：5个新 + 5个老（老字中错题优先）
@@ -151,14 +167,32 @@ export function useGame() {
       const errorPool = allChars.filter(c => learnedSet.has(c.id) && errorSet.has(c.id));
       const normalPool = allChars.filter(c => learnedSet.has(c.id) && !errorSet.has(c.id));
 
-      const newChars = randomPick(unlearned, Math.min(5, unlearned.length));
-      const fromError = randomPick(errorPool, Math.min(5, errorPool.length));
+      const newChars = randomPickUniqueChars(unlearned, Math.min(5, unlearned.length));
+      const oldTakenChars = new Set(newChars.map(c => c.char));
+      const fromError = randomPickUniqueChars(
+        errorPool.filter(c => !oldTakenChars.has(c.char)),
+        Math.min(5, errorPool.length)
+      );
       const errCount = fromError.length;
-      const fromNormal = randomPick(normalPool, Math.min(5 - errCount, normalPool.length));
+      fromError.forEach(c => oldTakenChars.add(c.char));
+      const fromNormal = randomPickUniqueChars(
+        normalPool.filter(c => !oldTakenChars.has(c.char)),
+        Math.min(5 - errCount, normalPool.length)
+      );
       selected = shuffle([...newChars, ...fromError, ...fromNormal]);
+    } else if (mode === 'speak') {
+      const learned = allChars.filter(c => learnedSet.has(c.id));
+      const unlearned = allChars.filter(c => !learnedSet.has(c.id));
+      const source = learned.length >= 5 ? learned : [...learned, ...unlearned];
+      selected = randomPickUniqueChars(source, Math.min(10, source.length));
+    }
+
+    if (selected.length === 0) {
+      return { success: false, error: '现在没有可以练习的字，先从新学字开始吧。' };
     }
 
     dispatch({ type: 'START_LEARN', mode, roundChars: selected });
+    return { success: true, count: selected.length };
   }, []);
 
   const nextChar = useCallback(() => dispatch({ type: 'NEXT_CHAR' }), []);

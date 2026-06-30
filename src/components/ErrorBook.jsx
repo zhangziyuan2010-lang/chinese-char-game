@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { getCurrentUser, getUserData } from '../utils/storage.js';
 import charDB from '../data/charDB.js';
+import { getChildMeaning } from '../utils/charText.js';
 import './Modal.css';
 
 export default function ErrorBook({ onClose }) {
@@ -30,7 +31,7 @@ export default function ErrorBook({ onClose }) {
                   <div className="error-item-char">{c.char}</div>
                   <div className="error-item-info">
                     <div className="error-item-pinyin">{c.pinyin}</div>
-                    <div className="error-item-meaning">{c.meaning}</div>
+                    <div className="error-item-meaning">{getChildMeaning(c)}</div>
                     <div className="error-item-sentence">{c.sentence}</div>
                   </div>
                 </div>

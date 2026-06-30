@@ -66,6 +66,14 @@
   flex-direction: column;
   gap: 14px;
 }
+.dashboard-notice {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff4e8;
+  color: #c46819;
+  font-size: 15px;
+  line-height: 1.4;
+}
 .dashboard-menu-btn {
   display: flex;
   align-items: center;
@@ -133,6 +141,14 @@
   border-color: #667eea;
   background: #f0f4ff;
 }
+.dashboard-game-option:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+.dashboard-game-option:disabled:hover {
+  border-color: transparent;
+  transform: none;
+}
 .dashboard-game-option span {
   flex: 1;
   font-weight: 600;
@@ -148,3 +164,5 @@
 .dashboard-game-option--review:hover { border-color: #27ae60; }
 .dashboard-game-option--mixed { background: #f5f5ff; }
 .dashboard-game-option--mixed:hover { border-color: #667eea; }
+.dashboard-game-option--speak { background: #fff8f1; }
+.dashboard-game-option--speak:hover { border-color: #d35400; }

@@ -48,3 +48,38 @@
   font-size: 14px;
   padding: 16px 0;
 }
+
+.learn-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.learn-nav-btn {
+  min-height: 54px;
+  border: none;
+  border-radius: 14px;
+  background: #f0f0f4;
+  color: #555;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.learn-nav-btn--primary {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: white;
+  box-shadow: 0 4px 16px rgba(67, 233, 123, 0.32);
+}
+
+.learn-nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.learn-nav-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}

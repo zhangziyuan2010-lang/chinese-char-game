@@ -3,7 +3,7 @@ import LearnedChars from './LearnedChars.jsx';
 import ErrorBook from './ErrorBook.jsx';
 import './DashboardPage.css';
 
-export default function DashboardPage({ username, stats, onStartGame, onLogout }) {
+export default function DashboardPage({ username, stats, notice, onStartGame, onLogout }) {
   const [showLearned, setShowLearned] = useState(false);
   const [showError, setShowError] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
@@ -36,6 +36,8 @@ export default function DashboardPage({ username, stats, onStartGame, onLogout }
 
       {/* 主菜单按钮 */}
       <div className="dashboard-menu">
+        {notice && <div className="dashboard-notice">{notice}</div>}
+
         <button
           className="dashboard-menu-btn"
           onClick={() => setShowLearned(true)}
@@ -63,10 +65,11 @@ export default function DashboardPage({ username, stats, onStartGame, onLogout }
               </button>
               <button
                 className="dashboard-game-option dashboard-game-option--review"
+                disabled={stats.learnedCount === 0}
                 onClick={() => { onStartGame('review'); setShowGameMenu(false); }}
               >
                 🔄 <span>复习字</span>
-                <small>巩固已学过的字</small>
+                <small>{stats.learnedCount === 0 ? '先学几个字再来' : '巩固已学过的字'}</small>
               </button>
               <button
                 className="dashboard-game-option dashboard-game-option--mixed"
@@ -74,6 +77,13 @@ export default function DashboardPage({ username, stats, onStartGame, onLogout }
               >
                 🎯 <span>混合模式</span>
                 <small>5个新字 + 5个老字</small>
+              </button>
+              <button
+                className="dashboard-game-option dashboard-game-option--speak"
+                onClick={() => { onStartGame('speak'); setShowGameMenu(false); }}
+              >
+                🎤 <span>跟读练习</span>
+                <small>看字后大声读出来</small>
               </button>
             </div>
           )}

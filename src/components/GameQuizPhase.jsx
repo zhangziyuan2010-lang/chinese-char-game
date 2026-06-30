@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { speak, stopSpeak } from '../utils/speech.js';
+import { getQuizPrompt } from '../utils/charText.js';
 import './GameQuizPhase.css';
 
 export default function GameQuizPhase({ roundChars, quizPool, quizIndex, score, onCorrect, onWrong, onComplete }) {
@@ -9,6 +10,7 @@ export default function GameQuizPhase({ roundChars, quizPool, quizIndex, score, 
   const [allDone, setAllDone] = useState(false);
 
   const currentQuiz = quizPool[quizIndex];
+  const quizPrompt = getQuizPrompt(currentQuiz);
   if (!currentQuiz && !allDone) return null;
 
   // 每道题自动朗读一遍题目
@@ -22,9 +24,7 @@ export default function GameQuizPhase({ roundChars, quizPool, quizIndex, score, 
     if (!currentQuiz) return;
     stopSpeak();
     setIsSpeaking(true);
-    await speak(currentQuiz.char);           // 先念字
-    await new Promise(r => setTimeout(r, 200)); // 短暂停顿
-    await speak(currentQuiz.meaning);         // 再念释义
+    await speak(quizPrompt);
     setIsSpeaking(false);
   };
 
@@ -92,9 +92,9 @@ export default function GameQuizPhase({ roundChars, quizPool, quizIndex, score, 
       {/* 题目：展示释义 + 喇叭按钮 */}
       {currentQuiz && (
         <div className="quiz-question">
-          <div className="quiz-question-label">请选出对应这个意思的字：</div>
+          <div className="quiz-question-label">请选出句子里少掉的字：</div>
           <div className="quiz-question-row">
-            <div className="quiz-question-meaning">{currentQuiz.meaning}</div>
+            <div className="quiz-question-meaning">{quizPrompt}</div>
             <button
               className={`quiz-speaker-btn ${isSpeaking ? 'quiz-speaker-btn--active' : ''}`}
               onClick={handleReplay}
@@ -132,7 +132,8 @@ export default function GameQuizPhase({ roundChars, quizPool, quizIndex, score, 
             onClick={() => handleSelect(c.id)}
             disabled={disabledChars.has(c.id)}
           >
-            {c.char}
+            <span className="quiz-char-text">{c.char}</span>
+            <span className="quiz-char-pinyin">{c.pinyin}</span>
           </button>
         ))}
       </div>

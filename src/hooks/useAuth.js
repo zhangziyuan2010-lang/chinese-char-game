@@ -7,18 +7,29 @@ import charDB from '../data/charDB.js';
 
 export function useAuth() {
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [dataVersion, setDataVersion] = useState(0);
+
+  const refreshUserData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
 
   const login = useCallback((username, password) => {
     const result = loginUser(username, password);
-    if (result.success) setCurrentUser(username);
+    if (result.success) {
+      setCurrentUser(username);
+      refreshUserData();
+    }
     return result;
-  }, []);
+  }, [refreshUserData]);
 
   const register = useCallback((username, password) => {
     const result = registerUser(username, password);
-    if (result.success) setCurrentUser(username);
+    if (result.success) {
+      setCurrentUser(username);
+      refreshUserData();
+    }
     return result;
-  }, []);
+  }, [refreshUserData]);
 
   const logout = useCallback(() => {
     logoutUser();
@@ -27,7 +38,7 @@ export function useAuth() {
 
   const userData = useMemo(() => {
     return currentUser ? getUserData(currentUser) : null;
-  }, [currentUser]);
+  }, [currentUser, dataVersion]);
 
   const learnedChars = userData?.learnedChars || [];
   const errorChars = userData?.errorChars || [];
@@ -67,7 +78,8 @@ export function useAuth() {
       score: gameResult.score,
       wrongChars: gameResult.wrongChars || [],
     });
-  }, [currentUser, userData]);
+    refreshUserData();
+  }, [currentUser, userData, refreshUserData]);
 
   return {
     currentUser,
@@ -81,5 +93,6 @@ export function useAuth() {
     logout,
     getStats,
     recordGame,
+    refreshUserData,
   };
 }
