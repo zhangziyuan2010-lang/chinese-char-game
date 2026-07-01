@@ -89,14 +89,12 @@ export async function unlockSpeech() {
 }
 
 export async function speak(text) {
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     const s = getSynth();
     if (!s) {
       resolve();
       return;
     }
-
-    await waitForVoices(s);
 
     // 估算总时长：中文约 2.5 字/秒（稍慢），加 4 秒缓冲
     const estimatedMs = Math.max(3500, (String(text).length / 2.8) * 1000 + 3000);
@@ -133,6 +131,8 @@ export async function speak(text) {
     utterance.onend = () => done();
     utterance.onerror = () => done();
 
+    // Android Chrome 对“异步后再 speak”很敏感，必须尽量在点击事件链里立刻 speak。
+    if (s.paused) s.resume();
     s.speak(utterance);
   });
 }

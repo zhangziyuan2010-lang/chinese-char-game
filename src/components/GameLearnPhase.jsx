@@ -1,17 +1,47 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import CharCard from './CharCard.jsx';
-import { stopSpeak } from '../utils/speech.js';
+import { speakSegments, stopSpeak, isSpeechSupported } from '../utils/speech.js';
+import { getCharSpeechText, getExampleSpeechSentences } from '../utils/charText.js';
 import './GameLearnPhase.css';
 
 export default function GameLearnPhase({ roundChars, onComplete }) {
   const [index, setIndex] = useState(0);
   const [showChar, setShowChar] = useState(true);
   const [speechDone, setSpeechDone] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const playIdRef = useRef(0);
   const hasChars = roundChars.length > 0;
   const isLast = index === roundChars.length - 1;
 
-  const moveToIndex = useCallback((nextIndex) => {
+  const playChar = useCallback(async (charData) => {
+    const playId = playIdRef.current + 1;
+    playIdRef.current = playId;
     stopSpeak();
+    setIsSpeaking(true);
+    setSpeechDone(false);
+
+    if (!isSpeechSupported()) {
+      if (playIdRef.current !== playId) return;
+      setIsSpeaking(false);
+      setSpeechDone(true);
+      return;
+    }
+
+    const segments = [
+      getCharSpeechText(charData),
+      ...getExampleSpeechSentences(charData),
+    ];
+
+    await speakSegments(segments, 1000);
+    if (playIdRef.current !== playId) return;
+    setIsSpeaking(false);
+    setSpeechDone(true);
+  }, []);
+
+  const moveToIndex = useCallback((nextIndex) => {
+    playIdRef.current += 1;
+    stopSpeak();
+    setIsSpeaking(false);
     setSpeechDone(false);
     setIndex(nextIndex);
     setShowChar(false);
@@ -20,8 +50,10 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
 
   const handlePrev = useCallback(() => {
     if (index === 0) return;
-    moveToIndex(index - 1);
-  }, [index, moveToIndex]);
+    const nextIndex = index - 1;
+    moveToIndex(nextIndex);
+    playChar(roundChars[nextIndex]);
+  }, [index, moveToIndex, playChar, roundChars]);
 
   const handleNext = useCallback(() => {
     if (!speechDone) return;
@@ -32,8 +64,10 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
       return;
     }
 
-    moveToIndex(index + 1);
-  }, [index, isLast, moveToIndex, onComplete, speechDone]);
+    const nextIndex = index + 1;
+    moveToIndex(nextIndex);
+    playChar(roundChars[nextIndex]);
+  }, [index, isLast, moveToIndex, onComplete, playChar, roundChars, speechDone]);
 
   // 组件卸载时取消朗读
   useEffect(() => {
@@ -71,13 +105,15 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
           <CharCard
             key={roundChars[index].id}
             charData={roundChars[index]}
-            onSpeechDone={() => setSpeechDone(true)}
+            isSpeaking={isSpeaking}
+            speechDone={speechDone}
+            onReplay={() => playChar(roundChars[index])}
           />
         )}
       </div>
 
       <div className="learn-card-hint">
-        {speechDone ? '朗读完成后，可以继续或返回复听' : '请认真听完朗读'}
+        {speechDone ? '朗读完成后，可以继续或返回复听' : '请点击播放朗读'}
       </div>
 
       <div className="learn-nav">
