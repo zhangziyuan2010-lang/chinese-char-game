@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import CharCard from './CharCard.jsx';
 import { speakSegments, stopSpeak, isSpeechSupported } from '../utils/speech.js';
+import { playLearningAudio, stopLearningAudio } from '../utils/learningAudio.js';
 import { getCharSpeechText, getExampleSpeechSentences } from '../utils/charText.js';
 import './GameLearnPhase.css';
 
@@ -14,39 +15,40 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
   const hasChars = roundChars.length > 0;
   const isLast = index === roundChars.length - 1;
 
+  const stopAllAudio = useCallback(() => {
+    stopLearningAudio();
+    stopSpeak();
+  }, []);
+
   const playChar = useCallback(async (charData) => {
     const playId = playIdRef.current + 1;
     playIdRef.current = playId;
-    stopSpeak();
+    stopAllAudio();
     setIsSpeaking(true);
     setSpeechDone(false);
     setSpeechError('');
-
-    if (!isSpeechSupported()) {
-      if (playIdRef.current !== playId) return;
-      setIsSpeaking(false);
-      setSpeechDone(true);
-      setSpeechError('当前浏览器不支持语音播报，建议用 Chrome 打开');
-      return;
-    }
 
     const segments = [
       getCharSpeechText(charData),
       ...getExampleSpeechSentences(charData),
     ];
 
-    const result = await speakSegments(segments, 1000);
+    let result = await playLearningAudio(charData.id);
+    if (!result?.ok && isSpeechSupported()) {
+      result = await speakSegments(segments, 1000);
+    }
+
     if (playIdRef.current !== playId) return;
     setIsSpeaking(false);
     setSpeechDone(true);
     if (!result?.ok) {
-      setSpeechError('没有听到声音时，请检查手机的语音服务，或用 Chrome 浏览器打开');
+      setSpeechError('没有听到声音时，请确认手机媒体音量已打开，再点播放朗读');
     }
-  }, []);
+  }, [stopAllAudio]);
 
   const moveToIndex = useCallback((nextIndex) => {
     playIdRef.current += 1;
-    stopSpeak();
+    stopAllAudio();
     setIsSpeaking(false);
     setSpeechDone(false);
     setSpeechError('');
@@ -66,7 +68,7 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
     if (!speechDone) return;
 
     if (isLast) {
-      stopSpeak();
+      stopAllAudio();
       onComplete();
       return;
     }
@@ -74,12 +76,12 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
     const nextIndex = index + 1;
     moveToIndex(nextIndex);
     playChar(roundChars[nextIndex]);
-  }, [index, isLast, moveToIndex, onComplete, playChar, roundChars, speechDone]);
+  }, [index, isLast, moveToIndex, onComplete, playChar, roundChars, speechDone, stopAllAudio]);
 
   // 组件卸载时取消朗读
   useEffect(() => {
-    return () => stopSpeak();
-  }, []);
+    return () => stopAllAudio();
+  }, [stopAllAudio]);
 
   if (!hasChars) {
     return (
