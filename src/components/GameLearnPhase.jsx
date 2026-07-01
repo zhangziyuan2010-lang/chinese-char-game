@@ -9,6 +9,7 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
   const [showChar, setShowChar] = useState(true);
   const [speechDone, setSpeechDone] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechError, setSpeechError] = useState('');
   const playIdRef = useRef(0);
   const hasChars = roundChars.length > 0;
   const isLast = index === roundChars.length - 1;
@@ -19,11 +20,13 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
     stopSpeak();
     setIsSpeaking(true);
     setSpeechDone(false);
+    setSpeechError('');
 
     if (!isSpeechSupported()) {
       if (playIdRef.current !== playId) return;
       setIsSpeaking(false);
       setSpeechDone(true);
+      setSpeechError('当前浏览器不支持语音播报，建议用 Chrome 打开');
       return;
     }
 
@@ -32,10 +35,13 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
       ...getExampleSpeechSentences(charData),
     ];
 
-    await speakSegments(segments, 1000);
+    const result = await speakSegments(segments, 1000);
     if (playIdRef.current !== playId) return;
     setIsSpeaking(false);
     setSpeechDone(true);
+    if (!result?.ok) {
+      setSpeechError('没有听到声音时，请检查手机的语音服务，或用 Chrome 浏览器打开');
+    }
   }, []);
 
   const moveToIndex = useCallback((nextIndex) => {
@@ -43,6 +49,7 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
     stopSpeak();
     setIsSpeaking(false);
     setSpeechDone(false);
+    setSpeechError('');
     setIndex(nextIndex);
     setShowChar(false);
     setTimeout(() => setShowChar(true), 100);
@@ -113,7 +120,7 @@ export default function GameLearnPhase({ roundChars, onComplete }) {
       </div>
 
       <div className="learn-card-hint">
-        {speechDone ? '朗读完成后，可以继续或返回复听' : '请点击播放朗读'}
+        {speechError || (speechDone ? '朗读完成后，可以继续或返回复听' : '请点击播放朗读')}
       </div>
 
       <div className="learn-nav">

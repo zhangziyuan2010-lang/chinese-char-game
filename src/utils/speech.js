@@ -3,6 +3,11 @@
 let synth = null;
 let unlocked = false;
 
+function isAndroid() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android/i.test(navigator.userAgent);
+}
+
 function getSynth() {
   if (!synth && typeof window !== 'undefined') {
     synth = window.speechSynthesis;
@@ -92,19 +97,20 @@ export async function speak(text) {
   return new Promise((resolve) => {
     const s = getSynth();
     if (!s) {
-      resolve();
+      resolve({ ok: false, error: '当前浏览器不支持语音播报' });
       return;
     }
 
     // 估算总时长：中文约 2.5 字/秒（稍慢），加 4 秒缓冲
     const estimatedMs = Math.max(3500, (String(text).length / 2.8) * 1000 + 3000);
     let resolved = false;
+    let started = false;
 
-    const done = () => {
+    const done = (result = { ok: true }) => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timer);
-        resolve();
+        resolve(result);
       }
     };
 
@@ -113,7 +119,7 @@ export async function speak(text) {
       if (!resolved) {
         console.warn('Speech timeout, forcing continue');
         s.cancel();
-        done();
+        done({ ok: started });
       }
     }, estimatedMs);
 
@@ -128,12 +134,28 @@ export async function speak(text) {
       utterance.voice = bestVoice;
     }
 
-    utterance.onend = () => done();
-    utterance.onerror = () => done();
+    utterance.onstart = () => {
+      started = true;
+    };
+    utterance.onend = () => done({ ok: true });
+    utterance.onerror = (event) => {
+      done({ ok: false, error: event?.error || '语音播报启动失败' });
+    };
 
     // Android Chrome 对“异步后再 speak”很敏感，必须尽量在点击事件链里立刻 speak。
     if (s.paused) s.resume();
     s.speak(utterance);
+
+    // 部分 Android 机型会进入 paused 状态，轻推一次可以恢复。
+    setTimeout(() => {
+      if (!resolved && s.paused) s.resume();
+    }, 120);
+
+    setTimeout(() => {
+      if (!resolved && !started && !s.speaking && !s.pending) {
+        done({ ok: false, error: '浏览器没有真正启动语音播报' });
+      }
+    }, 1800);
   });
 }
 
@@ -143,11 +165,21 @@ export async function speak(text) {
  * @returns {Promise<void>}
  */
 export async function speakSegments(segments, pauseMs = 220) {
+  if (isAndroid()) {
+    const androidText = segments
+      .filter(Boolean)
+      .join('。 ');
+    return speak(androidText);
+  }
+
+  let result = { ok: true };
   for (const seg of segments) {
-    await speak(seg);
+    result = await speak(seg);
+    if (!result?.ok) return result;
     // 段落间停顿，模拟自然换气
     await new Promise(r => setTimeout(r, pauseMs));
   }
+  return result;
 }
 
 /**
